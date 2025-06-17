@@ -2,103 +2,144 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>双色球号码生成器</title>
     <style>
         body {
             font-family: 'Microsoft YaHei', sans-serif;
-            max-width: 800px;
+            max-width: 100%;
             margin: 0 auto;
-            padding: 20px;
+            padding: 15px;
             background-color: #f5f5f5;
             color: #333;
+            -webkit-text-size-adjust: 100%;
         }
         h1 {
             color: #e60012;
             text-align: center;
-            margin-bottom: 30px;
+            margin: 15px 0;
+            font-size: 1.5rem;
         }
         .container {
             background-color: white;
             border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
-        .ball-container {
+        .ball-group {
             display: flex;
-            justify-content: center;
-            margin: 30px 0;
             flex-wrap: wrap;
+            justify-content: center;
+            margin: 15px 0;
+        }
+        .ball-row {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            width: 100%;
+            justify-content: center;
         }
         .red-ball {
-            width: 50px;
-            height: 50px;
+            width: 36px;
+            height: 36px;
             background-color: #e60012;
             color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 10px;
+            margin: 0 4px;
             font-weight: bold;
-            font-size: 20px;
+            font-size: 16px;
+            flex-shrink: 0;
         }
         .blue-ball {
-            width: 50px;
-            height: 50px;
+            width: 36px;
+            height: 36px;
             background-color: #1e50a2;
             color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 10px;
+            margin: 0 4px 0 8px;
             font-weight: bold;
-            font-size: 20px;
+            font-size: 16px;
+            flex-shrink: 0;
         }
         .generate-btn {
             display: block;
-            margin: 0 auto;
-            padding: 12px 30px;
+            width: 100%;
+            max-width: 200px;
+            margin: 20px auto;
+            padding: 10px 15px;
             background-color: #e60012;
             color: white;
             border: none;
             border-radius: 5px;
-            font-size: 18px;
+            font-size: 1rem;
             cursor: pointer;
             transition: background-color 0.3s;
         }
         .generate-btn:hover {
             background-color: #c5000f;
         }
+        .settings {
+            margin: 15px 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        .settings label {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .settings input[type="number"] {
+            width: 50px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
         .history {
-            margin-top: 30px;
+            margin-top: 20px;
         }
         .history h2 {
             color: #1e50a2;
+            font-size: 1.2rem;
             border-bottom: 1px solid #ddd;
-            padding-bottom: 10px;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
         }
         .history-item {
-            margin: 15px 0;
-            padding: 10px;
+            margin: 10px 0;
+            padding: 8px;
             background-color: #f9f9f9;
             border-radius: 5px;
+            font-size: 0.9rem;
         }
-        .settings {
-            margin: 20px 0;
+        .history-balls {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
         }
-        .settings label {
-            margin-right: 15px;
-        }
-        .settings input {
-            margin-right: 5px;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 30px;
+        .history-time {
             color: #666;
-            font-size: 14px;
+            margin-right: 10px;
+            font-size: 0.8rem;
+        }
+        @media (max-width: 400px) {
+            .red-ball, .blue-ball {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+                margin: 0 3px;
+            }
+            .blue-ball {
+                margin-left: 6px;
+            }
         }
     </style>
 </head>
@@ -108,14 +149,14 @@
         
         <div class="settings">
             <label>
-                <input type="checkbox" id="auto-sort" checked> 自动排序红球
+                <input type="checkbox" id="auto-sort" checked> 自动排序
             </label>
             <label>
-                <input type="number" id="count" min="1" max="10" value="1"> 生成注数 (1-10)
+                生成 <input type="number" id="count" min="1" max="5" value="1"> 注
             </label>
         </div>
         
-        <div class="ball-container" id="result">
+        <div class="ball-group" id="result">
             <!-- 号码将在这里显示 -->
         </div>
         
@@ -128,10 +169,6 @@
             </div>
         </div>
     </div>
-    
-    <div class="footer">
-        <p>温馨提示：彩票是一种随机游戏，请理性投注</p>
-    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -143,13 +180,11 @@
             
             // 生成双色球号码
             function generateDoubleColorBall() {
-                const count = parseInt(countInput.value) || 1;
+                const count = Math.min(parseInt(countInput.value) || 1, 5);
                 const autoSort = autoSortCheckbox.checked;
                 
-                // 清空当前结果
                 resultDiv.innerHTML = '';
                 
-                // 生成指定数量的号码
                 for (let i = 0; i < count; i++) {
                     const balls = generateBalls(autoSort);
                     displayBalls(balls, resultDiv);
@@ -157,9 +192,7 @@
                 }
             }
             
-            // 生成一组号码
             function generateBalls(autoSort) {
-                // 生成红球 (1-33选6个不重复)
                 let redBalls = [];
                 while (redBalls.length < 6) {
                     const num = Math.floor(Math.random() * 33) + 1;
@@ -168,67 +201,76 @@
                     }
                 }
                 
-                // 是否自动排序
                 if (autoSort) {
                     redBalls.sort((a, b) => a - b);
                 }
                 
-                // 生成蓝球 (1-16选1个)
                 const blueBall = Math.floor(Math.random() * 16) + 1;
                 
                 return { red: redBalls, blue: blueBall };
             }
             
-            // 显示号码
             function displayBalls(balls, container) {
-                const groupDiv = document.createElement('div');
-                groupDiv.style.marginBottom = '20px';
+                const ballRow = document.createElement('div');
+                ballRow.className = 'ball-row';
                 
-                // 显示红球
                 balls.red.forEach(num => {
                     const ball = document.createElement('div');
                     ball.className = 'red-ball';
                     ball.textContent = num.toString().padStart(2, '0');
-                    groupDiv.appendChild(ball);
+                    ballRow.appendChild(ball);
                 });
                 
-                // 显示蓝球
                 const blueBall = document.createElement('div');
                 blueBall.className = 'blue-ball';
                 blueBall.textContent = balls.blue.toString().padStart(2, '0');
-                groupDiv.appendChild(blueBall);
+                ballRow.appendChild(blueBall);
                 
-                container.appendChild(groupDiv);
+                container.appendChild(ballRow);
             }
             
-            // 添加到历史记录
             function addToHistory(balls) {
                 const historyItem = document.createElement('div');
                 historyItem.className = 'history-item';
                 
-                const time = new Date().toLocaleTimeString();
+                const timeSpan = document.createElement('span');
+                timeSpan.className = 'history-time';
+                timeSpan.textContent = new Date().toLocaleTimeString();
                 
-                let numbers = '';
+                const ballsDiv = document.createElement('div');
+                ballsDiv.className = 'history-balls';
+                
                 balls.red.forEach(num => {
-                    numbers += `<span class="red-ball" style="display: inline-flex; width: 30px; height: 30px; font-size: 14px; margin: 0 3px;">${num.toString().padStart(2, '0')}</span>`;
+                    const ball = document.createElement('span');
+                    ball.className = 'red-ball';
+                    ball.style.margin = '0 2px';
+                    ball.style.width = '28px';
+                    ball.style.height = '28px';
+                    ball.style.fontSize = '12px';
+                    ball.textContent = num.toString().padStart(2, '0');
+                    ballsDiv.appendChild(ball);
                 });
-                numbers += `<span class="blue-ball" style="display: inline-flex; width: 30px; height: 30px; font-size: 14px; margin: 0 3px 0 10px;">${balls.blue.toString().padStart(2, '0')}</span>`;
                 
-                historyItem.innerHTML = `<span style="color: #666; margin-right: 10px;">${time}</span> ${numbers}`;
+                const blueBall = document.createElement('span');
+                blueBall.className = 'blue-ball';
+                blueBall.style.margin = '0 2px 0 6px';
+                blueBall.style.width = '28px';
+                blueBall.style.height = '28px';
+                blueBall.style.fontSize = '12px';
+                blueBall.textContent = balls.blue.toString().padStart(2, '0');
+                ballsDiv.appendChild(blueBall);
                 
-                // 添加到历史记录顶部
+                historyItem.appendChild(timeSpan);
+                historyItem.appendChild(ballsDiv);
+                
                 historyList.insertBefore(historyItem, historyList.firstChild);
                 
-                // 限制历史记录数量
                 if (historyList.children.length > 10) {
                     historyList.removeChild(historyList.lastChild);
                 }
             }
             
-            // 绑定生成按钮点击事件
             generateBtn.addEventListener('click', generateDoubleColorBall);
-            
-            // 初始生成一组号码
             generateDoubleColorBall();
         });
     </script>
