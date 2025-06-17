@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双色球号码生成器</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        h1 {
+            color: #e60012;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .ball-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        .red-ball {
+            width: 50px;
+            height: 50px;
+            background-color: #e60012;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 10px;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        .blue-ball {
+            width: 50px;
+            height: 50px;
+            background-color: #1e50a2;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 10px;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        .generate-btn {
+            display: block;
+            margin: 0 auto;
+            padding: 12px 30px;
+            background-color: #e60012;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .generate-btn:hover {
+            background-color: #c5000f;
+        }
+        .history {
+            margin-top: 30px;
+        }
+        .history h2 {
+            color: #1e50a2;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .history-item {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        .settings {
+            margin: 20px 0;
+        }
+        .settings label {
+            margin-right: 15px;
+        }
+        .settings input {
+            margin-right: 5px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>双色球号码生成器</h1>
+        
+        <div class="settings">
+            <label>
+                <input type="checkbox" id="auto-sort" checked> 自动排序红球
+            </label>
+            <label>
+                <input type="number" id="count" min="1" max="10" value="1"> 生成注数 (1-10)
+            </label>
+        </div>
+        
+        <div class="ball-container" id="result">
+            <!-- 号码将在这里显示 -->
+        </div>
+        
+        <button class="generate-btn" id="generate-btn">生成号码</button>
+        
+        <div class="history">
+            <h2>历史记录</h2>
+            <div id="history-list">
+                <!-- 历史记录将在这里显示 -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>温馨提示：彩票是一种随机游戏，请理性投注</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const generateBtn = document.getElementById('generate-btn');
+            const resultDiv = document.getElementById('result');
+            const historyList = document.getElementById('history-list');
+            const autoSortCheckbox = document.getElementById('auto-sort');
+            const countInput = document.getElementById('count');
+            
+            // 生成双色球号码
+            function generateDoubleColorBall() {
+                const count = parseInt(countInput.value) || 1;
+                const autoSort = autoSortCheckbox.checked;
+                
+                // 清空当前结果
+                resultDiv.innerHTML = '';
+                
+                // 生成指定数量的号码
+                for (let i = 0; i < count; i++) {
+                    const balls = generateBalls(autoSort);
+                    displayBalls(balls, resultDiv);
+                    addToHistory(balls);
+                }
+            }
+            
+            // 生成一组号码
+            function generateBalls(autoSort) {
+                // 生成红球 (1-33选6个不重复)
+                let redBalls = [];
+                while (redBalls.length < 6) {
+                    const num = Math.floor(Math.random() * 33) + 1;
+                    if (!redBalls.includes(num)) {
+                        redBalls.push(num);
+                    }
+                }
+                
+                // 是否自动排序
+                if (autoSort) {
+                    redBalls.sort((a, b) => a - b);
+                }
+                
+                // 生成蓝球 (1-16选1个)
+                const blueBall = Math.floor(Math.random() * 16) + 1;
+                
+                return { red: redBalls, blue: blueBall };
+            }
+            
+            // 显示号码
+            function displayBalls(balls, container) {
+                const groupDiv = document.createElement('div');
+                groupDiv.style.marginBottom = '20px';
+                
+                // 显示红球
+                balls.red.forEach(num => {
+                    const ball = document.createElement('div');
+                    ball.className = 'red-ball';
+                    ball.textContent = num.toString().padStart(2, '0');
+                    groupDiv.appendChild(ball);
+                });
+                
+                // 显示蓝球
+                const blueBall = document.createElement('div');
+                blueBall.className = 'blue-ball';
+                blueBall.textContent = balls.blue.toString().padStart(2, '0');
+                groupDiv.appendChild(blueBall);
+                
+                container.appendChild(groupDiv);
+            }
+            
+            // 添加到历史记录
+            function addToHistory(balls) {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                
+                const time = new Date().toLocaleTimeString();
+                
+                let numbers = '';
+                balls.red.forEach(num => {
+                    numbers += `<span class="red-ball" style="display: inline-flex; width: 30px; height: 30px; font-size: 14px; margin: 0 3px;">${num.toString().padStart(2, '0')}</span>`;
+                });
+                numbers += `<span class="blue-ball" style="display: inline-flex; width: 30px; height: 30px; font-size: 14px; margin: 0 3px 0 10px;">${balls.blue.toString().padStart(2, '0')}</span>`;
+                
+                historyItem.innerHTML = `<span style="color: #666; margin-right: 10px;">${time}</span> ${numbers}`;
+                
+                // 添加到历史记录顶部
+                historyList.insertBefore(historyItem, historyList.firstChild);
+                
+                // 限制历史记录数量
+                if (historyList.children.length > 10) {
+                    historyList.removeChild(historyList.lastChild);
+                }
+            }
+            
+            // 绑定生成按钮点击事件
+            generateBtn.addEventListener('click', generateDoubleColorBall);
+            
+            // 初始生成一组号码
+            generateDoubleColorBall();
+        });
+    </script>
+</body>
+</html>
